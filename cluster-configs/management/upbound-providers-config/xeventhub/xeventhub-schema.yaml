@@ -25,8 +25,6 @@ spec:
               parameters:
                 type: object
                 properties:
-                  name:
-                    type: string
                   rgName:
                     type: string
                   location:
@@ -35,7 +33,6 @@ spec:
                     - southcentralus
                     - northcentralus
                 required:
-                - name
                 - rgName
                 - location
             required:
