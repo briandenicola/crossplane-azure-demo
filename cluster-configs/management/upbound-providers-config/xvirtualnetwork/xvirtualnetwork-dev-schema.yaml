@@ -1,0 +1,48 @@
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xvirtualnetworks.networking.bjdazure.tech
+spec:
+  group: networking.bjdazure.tech
+  names:
+    kind: XVirtualNetwork
+    plural: xvirtualnetworks
+  claimNames:
+    kind: VirtualNetwork
+    plural: virtualnetworks
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                properties:
+                  rgName:
+                    type: string
+                  location:
+                    type: string
+                    enum:
+                    - southcentralus
+                    - northcentralus
+                  networkCidr:
+                    type: integer
+                required:
+                - rgName
+                - location
+                - networkCidr
+            required:
+            - parameters
+          status:
+            type: object
+            properties:
+              vnetId:
+                description: The Virtual Network Resource Id
+                type: string

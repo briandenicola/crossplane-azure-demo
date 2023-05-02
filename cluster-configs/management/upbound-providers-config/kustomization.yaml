@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - azure-provider-config.yaml
   - ./xakscluster
+  - ./xvirtualnetwork
