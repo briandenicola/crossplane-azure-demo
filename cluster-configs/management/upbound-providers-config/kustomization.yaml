@@ -4,3 +4,5 @@ resources:
   - azure-provider-config.yaml
   - ./xakscluster
   - ./xvirtualnetwork
+  - ./xmanagedidentity
+  - ./xeventhub
