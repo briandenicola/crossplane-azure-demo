@@ -1,0 +1,42 @@
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xeventhubs.pubsub.bjdazure.tech
+spec:
+  group: pubsub.bjdazure.tech
+  names:
+    kind: XEventHub
+    plural: xeventhubs
+  claimNames:
+    kind: EventHub
+    plural: eventhubs
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  rgName:
+                    type: string
+                  location:
+                    type: string
+                    enum:
+                    - southcentralus
+                    - northcentralus
+                required:
+                - name
+                - rgName
+                - location
+            required:
+            - parameters

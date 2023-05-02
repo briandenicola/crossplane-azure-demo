@@ -1,0 +1,57 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xeventhub-dev
+  labels:
+    crossplane.io/xrd: xeventhubs.pubsub.bjdazure.tech
+    provider: azure
+spec:
+  writeConnectionSecretsToNamespace: upbound-system
+  compositeTypeRef:
+    apiVersion: pubsub.bjdazure.tech/v1alpha1
+    kind: XEventHub
+  resources:
+  - name: azure-eventhubnamespace
+    base:
+      apiVersion: eventhub.azure.upbound.io/v1beta1
+      kind: EventHubNamespace
+      metadata:
+        annotations:
+          meta.upbound.io/api-id: upbound/v1beta1
+        labels:
+          meta.upbound.io/type: azure-eventhubnamespace
+      spec:
+        forProvider:
+          autoInflateEnabled: true
+          capacity: 2
+          maximumThroughputUnits: 15
+          sku: Standard
+    patches:
+    - fromFieldPath: spec.parameters.rgName
+      toFieldPath: spec.forProvider.resourceGroupName
+    - fromFieldPath: spec.parameters.location
+      toFieldPath: spec.forProvider.location
+      transforms:
+        - type: map
+          map:
+            southcentralus: South Central US
+            northcentralus: North Central US
+  - name: azure-eventhub
+    base:
+      apiVersion: eventhub.azure.upbound.io/v1beta1
+      kind: EventHub
+      metadata:
+        annotations:
+          meta.upbound.io/api-id: upbound/v1beta1
+        labels:
+          meta.upbound.io/type: azure-eventhub
+      spec:
+        forProvider:
+          messageRetention: 7
+          namespaceNameSelector:
+            matchLabels:
+              meta.upbound.io/type: azure-eventhubnamespace
+          partitionCount: 15
+    patches:
+    - fromFieldPath: spec.parameters.rgName
+      toFieldPath: spec.forProvider.resourceGroupName
