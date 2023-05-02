@@ -1,38 +1,34 @@
 version: '3'
 
-#env:
-  
 tasks:
-  environment:
-    desc: Creates Azure infrastructure and deploys application code
+  up:
+    desc: Builds end to end an AKS environment
     cmds:
+    - terraform -chdir=./infrastructure workspace new {{.REGION}} || true
+    - terraform -chdir=./infrastructure workspace select {{.REGION}}
     - terraform -chdir=./infrastructure init
-    - terraform -chdir=./infrastructure apply -auto-approve
-    #- task: creds
- 
-  #creds:
-  #  desc: Gets credential file for newly created AKS cluster
-  #  cmds:
-  #  - az aks get-credentials -g {{.RG}} -n {{.AKS}} --overwrite-existing
-  #  - kubelogin convert-kubeconfig -l azurecli
-  #  vars:
-  #    RG: 
-  #      sh: terraform -chdir=./infrastructure output -raw APP_RESOURCE_GROUP
-  #    AKS: 
-  #      sh: terraform -chdir=./infrastructure output -raw AKS_CLUSTER_NAME
+    - terraform -chdir=./infrastructure apply -auto-approve -var "region={{.REGION}}"
+    - task: creds
+    vars:
+      REGION: '{{default "southcentralus" .CLI_ARGS}}'
+    
+  creds:
+    desc: Grab AKS credentials 
+    cmds:
+    - az aks get-credentials -g {{.RG}} -n {{.CP_AKS}} --overwrite-existing
+    - kubelogin convert-kubeconfig -l azurecli
+    vars:
+      RG: 
+        sh: terraform -chdir=./infrastructure output -raw AKS_RESOURCE_GROUP
+      CP_AKS: 
+        sh: terraform -chdir=./infrastructure output -raw CONTROLPLANE_AKS_CLUSTER_NAME
 
-  #deploy:
-  #  desc: Deploys application code via helm
-  #  cmds:
-  #  - helm upgrade -i app .
-  #  vars:
-
-  clean:
-    desc: Destroys Azure infrastructure and cleans up terraform state files
+  down:
+    desc: Destroys all Azure resources and cleans up terraform
     cmds:
     - cd infrastructure ;
-      rm -rf .terraform.lock.hcl .terraform terraform.tfstate terraform.tfstate.backup .terraform.tfstate.lock.info
+      rm -rf terraform.tfstate.d .terraform.lock.hcl .terraform terraform.tfstate terraform.tfstate.backup .terraform.tfstate.lock.info
     - az group delete -n {{.RG}} --yes || true
     vars:
       RG: 
-        sh: terraform -chdir=./infrastructure output -raw APP_RESOURCE_GROUP
+        sh: terraform -chdir=./infrastructure output -raw AKS_RESOURCE_GROUP

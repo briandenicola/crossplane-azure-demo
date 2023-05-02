@@ -1,0 +1,62 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: apps
+---
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: httpbin
+  namespace: apps
+spec:
+  components:
+    - name: httpbin
+      type: webservice
+      properties:
+        image: bjd145/httpbin:1087
+        memory: 1024Mi
+        cpu: "1.0"
+        exposeType: LoadBalancer
+        volumeMounts:
+          emptyDir:
+          - name: tmp-volume
+            mountPath: /usr/tmp
+      traits:
+        - type: annotations
+          properties:
+            prometheus.io/path: /metrics
+            prometheus.io/port: "9090"
+            prometheus.io/scrape: "true"
+        - type: scaler
+          properties:
+            replicas: 2
+        - type: expose
+          properties:
+            anotations:
+              service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+            type: LoadBalancer
+            port: 
+            - 8080
+        - type: hpa
+          properties:
+            targetAPIVersion: apps/v1
+            targetKind: Deployment
+            max: 5
+            min: 1
+            cpu:
+              type: Utilization
+              value: 80
+            mem:
+              type: Utilization
+              value: 80
+  policies:
+    - name: target-default
+      type: topology
+      properties:
+        clusters: ["local"]
+        namespace: "apps"
+
+
+
+            

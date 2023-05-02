@@ -1,8 +1,0 @@
-NAME: "default"
-ACR_NAME: ""
-APP_NAME: ""
-
-SERVICES:
-  TYPE: LoadBalancer
-  ANNOTATIONS:
-    service.beta.kubernetes.io/azure-load-balancer-internal: "true"

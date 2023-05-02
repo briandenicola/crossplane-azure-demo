@@ -1,0 +1,361 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xcluster-dev
+  labels:
+    crossplane.io/xrd: xaksclusters.containers.bjdazure.tech
+    provider: azure
+spec:
+  writeConnectionSecretsToNamespace: upbound-system
+  compositeTypeRef:
+    apiVersion: containers.bjdazure.tech/v1alpha1
+    kind: XAKSCluster
+  resources:
+  - name: azure-resource-group
+    base:
+      apiVersion: azure.upbound.io/v1beta1
+      kind: ResourceGroup
+      metadata:
+        annotations:
+          meta.upbound.io/api-id: upbound/v1beta1
+        labels:
+          meta.upbound.io/rg-name: crossplane-demo-rg
+          meta.upbound.io/type: azure-resource-group
+        name: crossplane-demo-rg
+      spec:
+        providerConfigRef:
+          name: azure
+    patches:
+    - fromFieldPath: spec.parameters.location
+      toFieldPath: spec.forProvider.location
+      transforms:
+        - type: map
+          map:
+            southcentralus: South Central US
+            northcentralus: North Central US
+  - name: azure-vnet
+    base:
+      apiVersion: network.azure.upbound.io/v1beta1
+      kind: VirtualNetwork
+      metadata:
+        annotations:
+          meta.upbound.io/api-id: upbound/v1beta1
+        labels:
+          meta.upbound.io/rg-name: crossplane-demo-rg
+          meta.upbound.io/vnet-name: crossplane-vnet
+          meta.upbound.io/type: azure-virtual-network
+        name: crossplane-vnet
+      spec:
+        providerConfigRef:
+          name: azure
+        forProvider:
+          addressSpace:
+            - 10.183.0.0/16
+          resourceGroupNameSelector:
+            matchLabels:
+              meta.upbound.io/rg-name: crossplane-demo-rg
+              meta.upbound.io/type: azure-resource-group
+    patches:
+    - fromFieldPath: spec.parameters.location
+      toFieldPath: spec.forProvider.location
+      transforms:
+        - type: map
+          map:
+            southcentralus: South Central US
+            northcentralus: North Central US
+  - name: azure-subnet-private-endpoints
+    base:
+      apiVersion: network.azure.upbound.io/v1beta1
+      kind: Subnet
+      metadata:
+        name: private-endpoints
+        labels:
+          meta.upbound.io/type: azure-virtual-subnet
+          meta.upbound.io/subnet-for: private-endpoints
+      spec:
+        providerConfigRef:
+          name: azure
+        forProvider:
+          addressPrefixes:
+            - 10.183.1.0/24
+          resourceGroupNameSelector:
+            matchLabels:
+              meta.upbound.io/rg-name: crossplane-demo-rg
+              meta.upbound.io/type: azure-resource-group
+          virtualNetworkNameSelector:
+            matchLabels:
+              meta.upbound.io/vnet-name: crossplane-vnet
+              meta.upbound.io/type: azure-virtual-network
+  - name: azure-subnet-kubernetes-nodes
+    base:
+      apiVersion: network.azure.upbound.io/v1beta1
+      kind: Subnet
+      metadata:
+        name: kubernetes-nodes
+        labels:
+          meta.upbound.io/type: azure-virtual-subnet
+          meta.upbound.io/subnet-for: akscluster-nodes
+      spec:
+        providerConfigRef:
+          name: azure
+        forProvider:
+          addressPrefixes:
+            - 10.183.3.0/24
+          resourceGroupNameSelector:
+            matchLabels:
+              meta.upbound.io/rg-name: crossplane-demo-rg
+              meta.upbound.io/type: azure-resource-group
+          virtualNetworkNameSelector:
+            matchLabels:
+              meta.upbound.io/vnet-name: crossplane-vnet
+              meta.upbound.io/type: azure-virtual-network
+  - name: azure-subnet-kubernetes-api
+    base:
+      apiVersion: network.azure.upbound.io/v1beta1
+      kind: Subnet
+      metadata:
+        name: kubernetes-api-server
+        labels:
+          meta.upbound.io/type: azure-virtual-subnet
+          meta.upbound.io/subnet-for: akscluster-api-server
+      spec:
+        providerConfigRef:
+          name: azure
+        forProvider:
+          addressPrefixes:
+            - 10.183.2.0/24
+          resourceGroupNameSelector:
+            matchLabels:
+              meta.upbound.io/rg-name: crossplane-demo-rg
+              meta.upbound.io/type: azure-resource-group
+          virtualNetworkNameSelector:
+            matchLabels:
+              meta.upbound.io/vnet-name: crossplane-vnet
+              meta.upbound.io/type: azure-virtual-network
+  - name: azure-aks-cluster
+    base:
+      apiVersion: containerservice.azure.upbound.io/v1beta1
+      kind: KubernetesCluster
+      metadata:
+        name: aks
+        labels:
+          meta.upbound.io/rg-name: crossplane-demo-rg
+          meta.upbound.io/type: azure-kubernetes-service
+      spec:
+        providerConfigRef:
+          name: azure
+        forProvider:
+          automaticChannelUpgrade: "patch"
+          oidcIssuerEnabled: true
+          skuTier: Free
+          workloadIdentityEnabled: true
+          runCommandEnabled: true
+          localAccountDisabled: true
+          azureActiveDirectoryRoleBasedAccessControl:
+          - azureRbacEnabled: true 
+            managed: true
+          defaultNodePool:
+            - name: default
+              vnetSubnetIdSelector:
+                matchLabels:
+                  meta.upbound.io/type: azure-virtual-subnet
+                  meta.upbound.io/subnet-for: akscluster-nodes
+              vmSize: Standard_B4ms
+              nodeCount: 1
+              enableAutoScaling: true
+              minCount: 1
+              maxCount: 3
+              maxPods: 40
+              osDiskSizeGb: 100
+              osSku: CBLMariner
+          kubernetesVersion: "1.26.0"
+          networkProfile:
+          - serviceCidr: 100.64.0.0/16
+            dnsServiceIp: "100.64.0.10"
+            podCidr: 100.62.0.0/16
+            dockerBridgeCidr: 172.17.0.1/16
+            loadBalancerSku: standard
+            networkPlugin: azure
+            networkPluginMode: Overlay
+          identity:
+          - type: SystemAssigned
+          resourceGroupNameSelector:
+            matchLabels:
+              meta.upbound.io/rg-name: crossplane-demo-rg
+              meta.upbound.io/type: azure-resource-group
+        writeConnectionSecretToRef:
+          namespace: upbound-system
+    patches:
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.id
+      toFieldPath: status.aksId
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.name
+      toFieldPath: spec.writeConnectionSecretToRef.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.location
+      toFieldPath: spec.forProvider.location
+      transforms:
+        - type: map
+          map:
+            southcentralus: South Central US
+            northcentralus: North Central US
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.name
+      toFieldPath: spec.forProvider.dnsPrefix
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.name
+      toFieldPath: spec.forProvider.dnsPrefix
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.nodeCount
+      toFieldPath: spec.defaultNodePool.nodeCount
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.parameters.name
+        - fromFieldPath: spec.parameters.location
+        strategy: string
+        string:
+          fmt: "%s_%s_nodes_rg"
+      toFieldPath: spec.forProvider.nodeResourceGroup
+      policy:
+        fromFieldPath: Required
+  - name: azure-flux-extension-install-and-configuration
+    base:
+      apiVersion: resources.azure.upbound.io/v1beta1
+      kind: ResourceGroupTemplateDeployment
+      metadata:
+        name: flux
+        labels:
+          meta.upbound.io/rg-name: crossplane-demo-rg
+          meta.upbound.io/type: azure-kubernetes-flux-extension
+      spec:
+        providerConfigRef:
+          name: azure
+        forProvider:
+          deploymentMode: Incremental
+          resourceGroupNameSelector:
+            matchLabels:
+              meta.upbound.io/rg-name: crossplane-demo-rg
+              meta.upbound.io/type: azure-resource-group
+          parametersContent: |-
+            ${jsonencode({
+              "aksId" = {
+                value = "fq-cluster-resource-id"
+              },
+              "clusterConfigurationUri" ={
+                value = "https://github.com/example/"
+              },
+              "clusterCommonConfigruationPath" ={
+                value = "./some/path/under/example/common"
+              },
+              "clusterAppsConfigruationPath" ={
+                value = "./some/path/under/example/repo"
+              }
+            })}
+          templateContent: |-
+            {
+              "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+              "contentVersion": "1.0.0.0",
+              "parameters": {
+                  "aksId": {
+                    "type": "String",
+                    "metadata": {
+                      "description": "Resource Id of the AKS Cluster"
+                    }
+                  },
+                  "clusterConfigurationUri": {
+                    "type": "String",
+                    "metadata": {
+                      "description": "Location of the Git repostory for cluster confgurations"
+                    }
+                  },
+                  "clusterCommonConfigruationPath": {
+                    "type": "String",
+                    "metadata": {
+                      "description": "Path of the common cluster confgurations kustomize files"
+                    }
+                  },
+                  "clusterAppsConfigruationPath": {
+                    "type": "String",
+                    "metadata": {
+                      "description": "Path of the application cluster confgurations kustomize files"
+                    }
+                  }
+              },
+              "variables": {},
+              "resources": [
+                {
+                  "type": "Microsoft.KubernetesConfiguration/extensions",
+                  "apiVersion": "2022-03-01",
+                  "name": "flux",
+                  "scope": "[parameters('aksId')]",
+                  "identity": {
+                    "type": "SystemAssigned"
+                  },
+                  "properties": {
+                    "extensionType": "microsoft.flux",
+                    "autoUpgradeMinorVersion": true,
+                    "releaseTrain": "stable",
+                    "scope": {
+                      "cluster": {
+                        "releaseNamespace": "flux-system"
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "Microsoft.KubernetesConfiguration/fluxConfigurations",
+                  "apiVersion": "2022-03-01",
+                  "name": "fluxconfiguration",
+                  "scope": "[parameters('aksId')]",
+                  "properties": {
+                    "scope": "cluster",
+                    "namespace": "flux-system",
+                    "sourceKind": "GitRepository",
+                    "suspend": false,
+                    "gitRepository": {
+                      "url": "[parameters('clusterConfigurationUri')]",
+                      "timeoutInSeconds": 600,
+                      "syncIntervalInSeconds": 300,
+                      "repositoryRef": {
+                        "branch": "main"
+                      }
+                    },
+                    "kustomizations": {
+                      "cluster-config": {
+                        "path": "[parameters('clusterCommonConfigruationPath')]",
+                        "dependsOn": [],
+                        "timeoutInSeconds": 600,
+                        "syncIntervalInSeconds": 120,
+                        "retryIntervalInSeconds": 300,
+                        "prune": true
+                      },
+                      "apps": {
+                        "path": "[parameters('clusterAppsConfigruationPath')]",
+                        "dependsOn": [
+                          "cluster-config"
+                        ],
+                        "timeoutInSeconds": 600,
+                        "syncIntervalInSeconds": 120,
+                        "retryIntervalInSeconds": 300,
+                        "prune": true
+                      }
+                    }
+                  }
+                }
+              ],
+              "outputs": {}
+            }
+    patches:
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: status.aksId
+        - fromFieldPath: spec.parameters.clusterConfigurationUri
+        - fromFieldPath: spec.parameters.clusterCommonConfigruationPath
+        - fromFieldPath: spec.parameters.clusterAppsConfigruationPath
+        strategy: string
+        string:
+          fmt: ${jsonencode({ "aksId" = { value = "%s" }, "clusterConfigurationUri" = { value = "%s" }, "clusterCommonConfigruationPath" = { value = "%s" }, "clusterAppsConfigruationPath" ={ value = "%s" }})}
+      toFieldPath: spec.forProvider.parametersContent
