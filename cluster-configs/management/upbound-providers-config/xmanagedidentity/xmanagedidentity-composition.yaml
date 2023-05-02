@@ -1,0 +1,43 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xmanagedidentity-dev
+  labels:
+    crossplane.io/xrd: xmanagedidentities.identities.bjdazure.tech
+    provider: azure
+spec:
+  writeConnectionSecretsToNamespace: upbound-system
+  compositeTypeRef:
+    apiVersion: identities.bjdazure.tech/v1alpha1
+    kind: XManagedIdentity
+  resources:
+  - name: azure-managedidentity
+    base:
+      apiVersion: managedidentity.azure.upbound.io/v1beta1
+      kind: UserAssignedIdentity
+      metadata:
+        annotations:
+          meta.upbound.io/api-id: upbound/v1beta1
+        labels:
+          meta.upbound.io/rg-name: crossplane-demo-rg
+          meta.upbound.io/type: azure-managedidentity
+      spec:
+        providerConfigRef:
+          name: azure
+        forProvider:
+          description: An azure user assigned managed identity
+    patches:
+    - fromFieldPath: spec.parameters.rgName
+      toFieldPath: spec.forProvider.resourceGroupName
+    - fromFieldPath: spec.parameters.location
+      toFieldPath: spec.forProvider.location
+      transforms:
+        - type: map
+          map:
+            southcentralus: South Central US
+            northcentralus: North Central US
+    - fromFieldPath: spec.parameters.name
+      toFieldPath: spec.forProvider.name
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.id
+      toFieldPath: status.managedIdentityid

@@ -1,0 +1,48 @@
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xmanagedidentities.identities.bjdazure.tech
+spec:
+  group: identities.bjdazure.tech
+  names:
+    kind: XManagedIdentity
+    plural: xmanagedidentities
+  claimNames:
+    kind: ManagedIdentity
+    plural: managedidentities
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  rgName:
+                    type: string
+                  location:
+                    type: string
+                    enum:
+                    - southcentralus
+                    - northcentralus
+                required:
+                - name
+                - rgName
+                - location
+            required:
+            - parameters
+          status:
+            type: object
+            properties:
+              managedIdentityid:
+                description: The Managed Identity Resource Id
+                type: string
