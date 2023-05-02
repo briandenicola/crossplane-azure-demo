@@ -21,6 +21,8 @@ spec:
         labels:
           meta.upbound.io/type: azure-eventhubnamespace
       spec:
+        providerConfigRef:
+          name: azure
         forProvider:
           autoInflateEnabled: true
           capacity: 2
@@ -46,6 +48,8 @@ spec:
         labels:
           meta.upbound.io/type: azure-eventhub
       spec:
+        providerConfigRef:
+          name: azure
         forProvider:
           messageRetention: 7
           namespaceNameSelector:
