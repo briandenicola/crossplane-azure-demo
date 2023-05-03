@@ -1,15 +1,15 @@
-# apiVersion: containers.bjdazure.tech/v1alpha1
-# kind: AKSCluster
-# metadata:
-#   namespace: default
-#   name: bjdaks05
-# spec:
-#   compositionRef:
-#     name: xcluster-dev
-#   parameters:
-#     location: southcentralus
-#     name: bjdaks05
-#     nodeCount: 2
-#     clusterConfigurationUri: https://github.com/briandenicola/crossplane-azure-demo
-#     clusterCommonConfigruationPath: ./cluster-configs/common
-#     clusterAppsConfigruationPath: ./cluster-configs/workload
+apiVersion: containers.bjdazure.tech/v1alpha1
+kind: AKSCluster
+metadata:
+  namespace: default
+  name: bjdaks05
+spec:
+  compositionRef:
+    name: xcluster-dev
+  parameters:
+    location: southcentralus
+    name: bjdaks05
+    nodeCount: 2
+    clusterConfigurationUri: https://github.com/briandenicola/crossplane-azure-demo
+    clusterCommonConfigruationPath: ./cluster-configs/common
+    clusterAppsConfigruationPath: ./cluster-configs/workload
