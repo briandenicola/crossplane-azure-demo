@@ -17,47 +17,172 @@ This repository is a demonstration of using Crossplane/Upbound in Azure on AKS. 
 * [Upbound Cli](https://github.com/briandenicola/tooling/blob/main/upbound.sh)
 
 # Quicksteps
+## Build Environment
 ```bash
-    az login --scope https://graph.microsoft.com/.default
+    az login --scope https://graph.microsoft.com/.default #Code requires AAD permissions 
     task up
 ```
 
-# Sample AKS Cluster Deployed via Crossplane
+## Destory Environment
 ```bash
-    #Create a simple resource group
-    kubectl apply -f ./manifests/crossplane/resourcegroup.yaml
+    az login --scope https://graph.microsoft.com/.default
+    task down
+```
 
-    #Create a virtual network and AKS cluster named aks02
-    kubectl apply -f ./manifests/crossplane/akscluster.yaml
+# Sample Compositions
+Compositions | Description
+------ | ------
+xaksclusters.containers.bjdazure.tech | AKS Cluster deployed to a virtual network with Flux Install
+xeventhubs.pubsub.bjdazure.tech | Sample Event Hub Namespace with a single Event Hub
+managedidentities.identities.bjdazure.tech | Sample Managed Identity
+xvirtualnetworks.networking.bjdazure.tech | Sample Virtual Network
+xsillydemoapps.apps.bjdazure.tech  | A demo of XRs of XRs.  This app is made up of a virtual network a managed identity
+
+## Commands
+* Additional example [manifests](https://github.com/briandenicola/cncf/tree/main/crossplane)
+
+```bash
+    flux get all
+    NAME                            REVISION                SUSPENDED       READY   MESSAGE
+    gitrepository/cluster-config    main@sha1:ca073f30      False           True    stored artifact for revision 'main@sha1:ca073f30'
+
+    NAME                            REVISION        SUSPENDED       READY   MESSAGE
+    helmrepository/daprrepo         sha256:30700e9b False           True    stored artifact: revision 'sha256:30700e9b'
+    helmrepository/kubereboot       sha256:fd8bc12e False           True    stored artifact: revision 'sha256:fd8bc12e'
+    helmrepository/kubevela         sha256:04ff52ef False           True    stored artifact: revision 'sha256:04ff52ef'
+    helmrepository/upbound-stable   sha256:88c9a0e7 False           True    stored artifact: revision 'sha256:88c9a0e7'
+
+    NAME                            REVISION        SUSPENDED       READY   MESSAGE
+    helmchart/flux-system-dapr      1.9.5           False           True    pulled 'dapr' chart with version '1.9.5'
+    helmchart/flux-system-kured     4.0.2           False           True    pulled 'kured' chart with version '4.0.2'
+    helmchart/flux-system-upbound   1.11.3-up.1     False           True    pulled 'universal-crossplane' chart with version '1.11.3-up.1'
+    helmchart/flux-system-vela      1.7.2           False           True    pulled 'vela-core' chart with version '1.7.2'
+
+    NAME                    REVISION        SUSPENDED       READY   MESSAGE
+    helmrelease/dapr        1.9.5           False           True    Release reconciliation succeeded
+    helmrelease/kured       4.0.2           False           True    Release reconciliation succeeded
+    helmrelease/upbound     1.11.3-up.1     False           True    Release reconciliation succeeded
+    helmrelease/vela        1.7.2           False           True    Release reconciliation succeeded
+
+    NAME                                                    REVISION                SUSPENDED       READY   MESSAGE
+    kustomization/cluster-config-addons                     main@sha1:ca073f30      False           True    Applied revision: main@sha1:ca073f30
+    kustomization/cluster-config-crossplane-cfg             main@sha1:ca073f30      False           True    Applied revision: main@sha1:ca073f30
+    kustomization/cluster-config-crossplane-claims          main@sha1:ca073f30      False           True    Applied revision: main@sha1:ca073f30
+    kustomization/cluster-config-crossplane-compositions    main@sha1:ca073f30      False           True    Applied revision: main@sha1:ca073f30
+
+
+    kubectl get xrds
+    NAME                                          ESTABLISHED   OFFERED   AGE
+    xaksclusters.containers.bjdazure.tech         True          True      19h
+    xeventhubs.pubsub.bjdazure.tech               True          True      16h
+    xmanagedidentities.identities.bjdazure.tech   True          True      18h
+    xsillydemoapps.apps.bjdazure.tech             True          True      18h
+    xvirtualnetworks.networking.bjdazure.tech     True          True      19h
+
+    kubectl get xsillydemoapps.apps.bjdazure.tech
+    NAME             SYNCED   READY   COMPOSITION         AGE
+    bjdapp01-2fxsn   True     True    xsillydemoapp-dev   18h
+
+    kubectl get xvirtualnetworks.networking.bjdazure.tech
+    NAME                   SYNCED   READY   COMPOSITION           AGE
+    bjdapp01-2fxsn-fz56h   True     True    xvirtualnetwork-dev   18h
+
+    kubectl get xmanagedidentities.identities.bjdazure.tech
+    NAME                   SYNCED   READY   COMPOSITION            AGE
+    bjdapp01-2fxsn-4n5dt   True     True    xmanagedidentity-dev   18h
+
+    kubectl get providerconfig
+    NAME                                    AGE
+    providerconfig.azure.upbound.io/azure   19h
+
+    NAME                                                                        AGE   CONFIG-NAME   RESOURCE-KIND          RESOURCE-NAME
+    providerconfigusage.azure.upbound.io/10b76f95-bbc0-402c-9c7c-2461a7c491b9   18h   azure         Subnet                 bjdapp01-2fxsn-gvbl6
+    providerconfigusage.azure.upbound.io/189d472b-663c-43c4-9cae-3b16eb44099a   16h   azure         ResourceGroup          test-pubsub-rg
+    providerconfigusage.azure.upbound.io/42bce62c-ef56-4577-bde3-981fd6f9fd39   18h   azure         Subnet                 bjdapp01-2fxsn-tvvd6
+    providerconfigusage.azure.upbound.io/5a08f37f-e182-4866-9bc3-b571802696cc   16h   azure         EventHub               bjdhub005-q9fvr-ntjqp
+    providerconfigusage.azure.upbound.io/64695c55-2285-4b79-9616-75dd9d3f3128   18h   azure         Subnet                 bjdapp01-2fxsn-gpmrh
+    providerconfigusage.azure.upbound.io/665074d2-7185-4fec-ae4f-f5d926b5ca1b   16h   azure         EventHubNamespace      bjdhub005-q9fvr-hpwbl
+    providerconfigusage.azure.upbound.io/c0dc0123-132e-45c1-a504-cfe2c6d833be   18h   azure         UserAssignedIdentity   bjdapp01-2fxsn-hhv47
+    providerconfigusage.azure.upbound.io/d0290943-5855-42a2-b5a8-f5bfa770f760   18h   azure         VirtualNetwork         bjdapp01-2fxsn-d6zr8
+    providerconfigusage.azure.upbound.io/f537b917-e4ab-40de-9469-5059b627fa6c   18h   azure         ResourceGroup          test-app01-rg
+
+    kubectl get providerconfig.azure.upbound.io azure -o yaml
+    apiVersion: azure.upbound.io/v1beta1
+    kind: ProviderConfig
+    metadata:
+    creationTimestamp: "2023-05-02T18:05:41Z"
+    finalizers:
+    - in-use.crossplane.io
+    generation: 1
+    labels:
+        kustomize.toolkit.fluxcd.io/name: cluster-config-crossplane-compositions
+        kustomize.toolkit.fluxcd.io/namespace: flux-system
+    name: azure
+    resourceVersion: "108607"
+    uid: 79011ae5-bbd7-4c0a-bc38-d0e17469f895
+    spec:
+    credentials:
+        secretRef:
+        key: creds
+        name: azure-creds
+        namespace: upbound-system
+        source: Secret
+    status:
+    users: 9
+```
+
+# Create Sample AKS Cluster via Crossplane
+* Uncomment ./cluster-configs/management/upbound-providers-claims/bjdaks05.yaml
+* This will create an AKS cluster and deploy an application defined by OAM/Kubevela from ./cluster-configs/workload/httpbin.yaml
+
+## Commands
+```bash
+    kubectl get xaksclusters.containers.bjdazure.tech  #Creating Cluster
+    NAME             SYNCED   READY   COMPOSITION    AGE
+    bjdaks05-g97tk   True     False   xcluster-dev   81s
 
     kubectl get kubernetescluster
-    NAME    READY   SYNCED   EXTERNAL-NAME   AGE
-    aks02   True    True     aks02           13m
+    NAME                   READY   SYNCED   EXTERNAL-NAME          AGE
+    bjdaks05-g97tk-vqjgw   True    True     bjdaks05-g97tk-vqjgw   18m
 
-    #Make a Claim against a Composite Resource (XR)
-    kubectl apply -f ./manifests/crossplane/composite/
-    kubectl get compositeresourcedefinition.apiextensions.crossplane.io xclusters.aks.bjdazure.tech
-    NAME                                     ESTABLISHED   OFFERED   AGE
-    xaksclusters.containers.bjdazure.tech    True          True      62s
+    kubectl get xaksclusters.containers.bjdazure.tech
+    NAME             SYNCED   READY   COMPOSITION    AGE
+    bjdaks05-g97tk   True     True    xcluster-dev   19m
 
-    kubectl get compositions
-    NAME           AGE
-    xcluster-dev   6m50s
+    az aks get-credentials --resource-group bjdaks05-g97tk-frfpb --name bjdaks05-g97tk-vqjgw
+    Merged "bjdaks05-g97tk-vqjgw" as current context in /home/brian/.kube/config
 
-    kubectl apply -f ./manifests/crossplane/aksclaim.yaml
+    flux get all
+    NAME                            REVISION                SUSPENDED       READY   MESSAGE
+    gitrepository/fluxconfiguration main@sha1:ca073f30      False           True    stored artifact for revision 'main@sha1:ca073f30'
 
-    kubectl get aksclusters.containers.bjdazure.tech/aks03
-    NAME    SYNCED   READY   CONNECTION-SECRET   AGE
-    aks03   True     False                       32s
+    NAME                            REVISION        SUSPENDED       READY   MESSAGE
+    helmrepository/daprrepo         sha256:30700e9b False           True    stored artifact: revision 'sha256:30700e9b'
+    helmrepository/kubereboot       sha256:fd8bc12e False           True    stored artifact: revision 'sha256:fd8bc12e'
+    helmrepository/kubevela         sha256:04ff52ef False           True    stored artifact: revision 'sha256:04ff52ef'
 
-    ...
-    kubectl get aksclusters.containers.bjdazure.tech/aks03
-    NAME    SYNCED   READY   CONNECTION-SECRET   AGE
-    aks03   True     True                        32s
+    NAME                            REVISION        SUSPENDED       READY   MESSAGE
+    helmchart/flux-system-dapr      1.9.5           False           True    pulled 'dapr' chart with version '1.9.5'
+    helmchart/flux-system-kured     4.0.2           False           True    pulled 'kured' chart with version '4.0.2'
+    helmchart/flux-system-vela      1.7.2           False           True    pulled 'vela-core' chart with version '1.7.2'
 
-    kubectl get  resourcegroup,virtualnetwork,subnet,kubernetes
-    NAME    READY   SYNCED   EXTERNAL-NAME   AGE
-    aks03   True    True     aks03           13m
+    NAME                    REVISION        SUSPENDED       READY   MESSAGE
+    helmrelease/dapr        1.9.5           False           True    Release reconciliation succeeded
+    helmrelease/kured       4.0.2           False           True    Release reconciliation succeeded
+    helmrelease/vela        1.7.2           False           True    Release reconciliation succeeded
+
+    NAME                                            REVISION                SUSPENDED       READY   MESSAGE
+    kustomization/fluxconfiguration-apps            main@sha1:ca073f30      False           True    Applied revision: main@sha1:ca073f30
+    kustomization/fluxconfiguration-cluster-config  main@sha1:ca073f30      False           True    Applied revision: main@sha1:ca073f30
+
+    kubectl -n apps get application
+    NAME      COMPONENT   TYPE         PHASE     HEALTHY   STATUS      AGE
+    httpbin   httpbin     webservice   running   true      Ready:2/2   92s
+
+    kubectl -n apps get pods
+    NAME                       READY   STATUS    RESTARTS   AGE
+    httpbin-7fbcb8955d-hg46h   1/1     Running   0          96s
+    httpbin-7fbcb8955d-pvnzk   1/1     Running   0          96s
 ```
 
 # Additional References
@@ -76,6 +201,6 @@ This repository is a demonstration of using Crossplane/Upbound in Azure on AKS. 
 
 # Backlog
 - [X] Learn Crossplane
-- [ ] Add GitOps/Kubevela to Workload cluster
+- [X] Add GitOps/Kubevela to Workload cluster
 - [ ] Add Backstage
 - [ ] Update automation to deploy app from Backstage to newly created cluster through Crossplane and Flux
