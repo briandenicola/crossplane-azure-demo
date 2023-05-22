@@ -9,6 +9,7 @@ tasks:
     - terraform -chdir=./infrastructure init
     - terraform -chdir=./infrastructure apply -auto-approve -var "region={{.REGION}}"
     - task: creds
+    - task: provider-config
     vars:
       REGION: '{{default "southcentralus" .CLI_ARGS}}'
     
@@ -21,7 +22,25 @@ tasks:
       RG: 
         sh: terraform -chdir=./infrastructure output -raw AKS_RESOURCE_GROUP
       CP_AKS: 
-        sh: terraform -chdir=./infrastructure output -raw CONTROLPLANE_AKS_CLUSTER_NAME
+        sh: terraform -chdir=./infrastructure output -raw crossplane_AKS_CLUSTER_NAME
+
+  provider-config:
+    desc: Update upbound azure provider configuration
+    cmds:
+    - export AKS_TENANT_ID={{.AKS_TENANT_ID}} ;
+      export AKS_SUBSCRIPTION_ID={{.AKS_SUBSCRIPTION_ID}} ;
+      export UMI_CLIENT_ID={{.UMI_CLIENT_ID}} ;
+      envsubst < ./cluster-configs/management/upbound-providers-config/azure-config.tmpl > ./cluster-configs/management/upbound-providers-config/azure-config.yaml
+    - git add ./cluster-configs/management/upbound-providers-config/azure-config.yaml
+    - git commit -m "Updated Azure configuration"
+    - git push
+    vars:
+      AKS_TENANT_ID: 
+        sh: terraform -chdir=./infrastructure output -raw AKS_TENANT_ID
+      AKS_SUBSCRIPTION_ID: 
+        sh: terraform -chdir=./infrastructure output -raw AKS_SUBSCRIPTION_ID
+      UMI_CLIENT_ID: 
+        sh: terraform -chdir=./infrastructure output -raw UMI_CLIENT_ID
 
   down:
     desc: Destroys all Azure resources and cleans up terraform

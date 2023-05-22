@@ -1,11 +1,11 @@
 resource "azapi_resource" "mgmt_cluster_flux_install" {
   depends_on = [
-    azurerm_kubernetes_cluster.controlplane
+    azurerm_kubernetes_cluster.crossplane
   ]
 
   type      = "Microsoft.KubernetesConfiguration/extensions@2022-03-01"
   name      = "flux"
-  parent_id = azurerm_kubernetes_cluster.controlplane.id
+  parent_id = azurerm_kubernetes_cluster.crossplane.id
 
   body = jsonencode({
     properties = {
@@ -22,7 +22,7 @@ resource "azapi_resource" "mgmt_cluster_flux_config" {
 
   type      = "Microsoft.KubernetesConfiguration/fluxConfigurations@2022-03-01"
   name      = "cluster-config"
-  parent_id = azurerm_kubernetes_cluster.controlplane.id
+  parent_id = azurerm_kubernetes_cluster.crossplane.id
 
   body = jsonencode({
     properties : {

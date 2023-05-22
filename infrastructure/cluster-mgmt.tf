@@ -1,15 +1,15 @@
-resource "azurerm_kubernetes_cluster" "controlplane" {
+resource "azurerm_kubernetes_cluster" "crossplane" {
   lifecycle {
     ignore_changes = [
       default_node_pool.0.node_count,
     ]
   }
 
-  name                              = local.controlplane_name
+  name                              = local.crossplane_name
   resource_group_name               = azurerm_resource_group.this.name
   location                          = azurerm_resource_group.this.location
-  node_resource_group               = "${local.resource_name}_controlplane_nodes_rg"
-  dns_prefix                        = local.controlplane_name
+  node_resource_group               = "${local.resource_name}_crossplane_nodes_rg"
+  dns_prefix                        = local.crossplane_name
   kubernetes_version                = data.azurerm_kubernetes_service_versions.current.latest_version
   sku_tier                          = "Standard"
   oidc_issuer_enabled               = true
@@ -31,13 +31,13 @@ resource "azurerm_kubernetes_cluster" "controlplane" {
 
   identity {
     type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.controlplane_identity.id]
+    identity_ids = [azurerm_user_assigned_identity.crossplane_identity.id]
   }
 
   kubelet_identity {
-    client_id                 = azurerm_user_assigned_identity.controlplane_kubelet_identity.client_id
-    object_id                 = azurerm_user_assigned_identity.controlplane_kubelet_identity.principal_id
-    user_assigned_identity_id = azurerm_user_assigned_identity.controlplane_kubelet_identity.id
+    client_id                 = azurerm_user_assigned_identity.crossplane_kubelet_identity.client_id
+    object_id                 = azurerm_user_assigned_identity.crossplane_kubelet_identity.principal_id
+    user_assigned_identity_id = azurerm_user_assigned_identity.crossplane_kubelet_identity.id
   }
 
   api_server_access_profile {
@@ -51,7 +51,7 @@ resource "azurerm_kubernetes_cluster" "controlplane" {
     node_count          = 1
     vm_size             = "Standard_DS4_v2"
     os_disk_size_gb     = 30
-    vnet_subnet_id      = azurerm_subnet.controlplane.id
+    vnet_subnet_id      = azurerm_subnet.crossplane.id
     os_sku              = "CBLMariner"
     type                = "VirtualMachineScaleSets"
     enable_auto_scaling = true
@@ -64,9 +64,9 @@ resource "azurerm_kubernetes_cluster" "controlplane" {
   }
 
   network_profile {
-    dns_service_ip      = "100.${random_integer.controlplane_services_cidr.id}.0.10"
-    service_cidr        = "100.${random_integer.controlplane_services_cidr.id}.0.0/16"
-    pod_cidr            = "100.${random_integer.controlplane_pod_cidr.id}.0.0/16"
+    dns_service_ip      = "100.${random_integer.crossplane_services_cidr.id}.0.10"
+    service_cidr        = "100.${random_integer.crossplane_services_cidr.id}.0.0/16"
+    pod_cidr            = "100.${random_integer.crossplane_pod_cidr.id}.0.0/16"
     network_plugin      = "azure"
     network_plugin_mode = "Overlay"
     load_balancer_sku   = "standard"
@@ -91,7 +91,7 @@ resource "azurerm_kubernetes_cluster" "controlplane" {
 
 }
 
-data "azurerm_public_ip" "controlplane" {
-  name                = reverse(split("/", tolist(azurerm_kubernetes_cluster.controlplane.network_profile.0.load_balancer_profile.0.effective_outbound_ips)[0]))[0]
-  resource_group_name = azurerm_kubernetes_cluster.controlplane.node_resource_group
+data "azurerm_public_ip" "crossplane" {
+  name                = reverse(split("/", tolist(azurerm_kubernetes_cluster.crossplane.network_profile.0.load_balancer_profile.0.effective_outbound_ips)[0]))[0]
+  resource_group_name = azurerm_kubernetes_cluster.crossplane.node_resource_group
 }
