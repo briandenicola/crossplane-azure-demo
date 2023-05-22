@@ -19,8 +19,10 @@ This repository is a demonstration of using Crossplane/Upbound in Azure on AKS. 
 # Quicksteps
 ## Build Environment
 ```bash
-    az login --scope https://graph.microsoft.com/.default #Code requires AAD permissions 
+    az login --scope https://graph.microsoft.com/.default
     task up
+    ... Wait til Cluster is Created and Flux has fully reconciled
+    task federate-serviceaccount 
 ```
 
 ## Destory Environment
@@ -110,7 +112,7 @@ xsillydemoapps.apps.bjdazure.tech  | A demo of XRs of XRs.  This app is made up 
     apiVersion: azure.upbound.io/v1beta1
     kind: ProviderConfig
     metadata:
-    creationTimestamp: "2023-05-02T18:05:41Z"
+    creationTimestamp: "2023-05-22T18:43:38Z"
     finalizers:
     - in-use.crossplane.io
     generation: 1
@@ -118,17 +120,16 @@ xsillydemoapps.apps.bjdazure.tech  | A demo of XRs of XRs.  This app is made up 
         kustomize.toolkit.fluxcd.io/name: cluster-config-crossplane-compositions
         kustomize.toolkit.fluxcd.io/namespace: flux-system
     name: azure
-    resourceVersion: "108607"
-    uid: 79011ae5-bbd7-4c0a-bc38-d0e17469f895
+    resourceVersion: "25799"
+    uid: 30360285-bcf1-4e8d-98cd-b948c2bbcb5a
     spec:
+    clientID: 78698943-b8cc-4171-aa3b-..........
     credentials:
-        secretRef:
-        key: creds
-        name: azure-creds
-        namespace: upbound-system
-        source: Secret
+        source: OIDCTokenFile
+    subscriptionID: ccfc5dda-43af-4b5e-8cc2-..........
+    tenantID: 16b3c013-d300-468d-ac64-..........
     status:
-    users: 9
+    users: 1
 ```
 
 # Create Sample AKS Cluster via Crossplane
