@@ -16,13 +16,13 @@ tasks:
   creds:
     desc: Grab AKS credentials 
     cmds:
-    - az aks get-credentials -g {{.RG}} -n {{.CP_AKS}} --overwrite-existing
+    - az aks get-credentials -g {{.RG}} -n {{.AKS}} --overwrite-existing
     - kubelogin convert-kubeconfig -l azurecli
     vars:
       RG: 
         sh: terraform -chdir=./infrastructure output -raw AKS_RESOURCE_GROUP
-      CP_AKS: 
-        sh: terraform -chdir=./infrastructure output -raw crossplane_AKS_CLUSTER_NAME
+      AKS: 
+        sh: terraform -chdir=./infrastructure output -raw AKS_CLUSTER_NAME
 
   provider-config:
     desc: Update upbound azure provider configuration
@@ -41,6 +41,26 @@ tasks:
         sh: terraform -chdir=./infrastructure output -raw AKS_SUBSCRIPTION_ID
       UMI_CLIENT_ID: 
         sh: terraform -chdir=./infrastructure output -raw UMI_CLIENT_ID
+
+  federate-serviceaccount:
+    desc: Federate Service Accounts for Identity Access
+    cmds:
+    - task: creds
+    - kubectl -n {{.NAMESPACE}} label deployment {{.CURRENT_REVISION}} azure.workload.identity/use=true
+    - kubectl -n {{.NAMESPACE}} label serviceaccount {{.CURRENT_REVISION}} azure.workload.identity/use=true
+    - bash ./scripts/federate-workload-identity.sh -c {{.AKS}} -g {{.RG}} -n {{.NAMESPACE}} -a {{.CURRENT_REVISION}} -i {{.UMI_CLIENT_NAME}}
+    - kubectl -n {{.NAMESPACE}} rollout restart deployment {{.CURRENT_REVISION}}
+    vars:
+      AKS:
+        sh: terraform -chdir=./infrastructure output -raw AKS_CLUSTER_NAME
+      RG: 
+        sh: terraform -chdir=./infrastructure output -raw AKS_RESOURCE_GROUP
+      NAMESPACE: 
+        sh: terraform -chdir=./infrastructure output -raw NAMESPACE
+      UMI_CLIENT_NAME:
+        sh: terraform -chdir=./infrastructure output -raw UMI_CLIENT_NAME
+      CURRENT_REVISION:
+        sh: kubectl -n {{.NAMESPACE}} get Provider provider-azure -o jsonpath='{.status.currentRevision}'
 
   down:
     desc: Destroys all Azure resources and cleans up terraform
