@@ -22,3 +22,12 @@ output "UMI_CLIENT_ID" {
   value     = azurerm_user_assigned_identity.crossplane_identity.client_id
   sensitive = false
 }
+
+output "UMI_CLIENT_NAME" {
+  value     = azurerm_user_assigned_identity.crossplane_identity.name
+  sensitive = false
+}
+
+output "NAMESPACE" {
+  value = var.namespace
+}
