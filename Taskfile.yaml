@@ -46,7 +46,7 @@ tasks:
     desc: Federate Service Accounts for Identity Access
     cmds:
     - task: creds
-    - kubectl -n {{.NAMESPACE}} label deployment {{.CURRENT_REVISION}} azure.workload.identity/use=true
+    - kubectl -n upbound-system patch deployment {{.CURRENT_REVISION}} -p '{"spec":{"template":{"metadata":{"labels":{"azure.workload.identity/use":"true"}}}}}'
     - kubectl -n {{.NAMESPACE}} label serviceaccount {{.CURRENT_REVISION}} azure.workload.identity/use=true
     - bash ./scripts/federate-workload-identity.sh -c {{.AKS}} -g {{.RG}} -n {{.NAMESPACE}} -a {{.CURRENT_REVISION}} -i {{.UMI_CLIENT_NAME}}
     - kubectl -n {{.NAMESPACE}} rollout restart deployment {{.CURRENT_REVISION}}
