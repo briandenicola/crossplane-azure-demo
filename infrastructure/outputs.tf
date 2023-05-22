@@ -3,7 +3,7 @@ output "AKS_RESOURCE_GROUP" {
   sensitive = false
 }
 
-output "crossplane_AKS_CLUSTER_NAME" {
+output "AKS_CLUSTER_NAME" {
   value     = azurerm_kubernetes_cluster.crossplane.name
   sensitive = false
 }
