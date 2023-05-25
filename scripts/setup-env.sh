@@ -1,3 +1,10 @@
-export AKS_TENANT_ID=$(terraform -chdir=./infrastructure output -raw AKS_TENANT_ID)
-export AKS_SUBSCRIPTION_ID=$(terraform -chdir=./infrastructure output -raw AKS_SUBSCRIPTION_ID)
-export UMI_CLIENT_ID=$(terraform -chdir=./infrastructure output -raw UMI_CLIENT_ID)
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+INFRA_PATH=$(realpath "${SCRIPT_DIR}/../infrastructure")
+
+export AKS_TENANT_ID=$(terraform -chdir=${INFRA_PATH} output -raw AKS_TENANT_ID)
+export AKS_SUBSCRIPTION_ID=$(terraform -chdir=${INFRA_PATH} output -raw AKS_SUBSCRIPTION_ID)
+export AKS_CLUSTER_NAME=$(terraform -chdir=${INFRA_PATH} output -raw AKS_CLUSTER_NAME)
+export AKS_RESOURCE_GROUP=$(terraform -chdir=${INFRA_PATH} output -raw AKS_RESOURCE_GROUP)
+export UMI_CLIENT_NAME=$(terraform -chdir=${INFRA_PATH} output -raw UMI_CLIENT_NAME)
+export UMI_CLIENT_ID=$(terraform -chdir=${INFRA_PATH} output -raw UMI_CLIENT_ID)
+export NAMESPACE=$(terraform -chdir=${INFRA_PATH} output -raw NAMESPACE)
