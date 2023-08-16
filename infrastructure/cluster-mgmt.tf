@@ -12,21 +12,22 @@ resource "azurerm_kubernetes_cluster" "crossplane" {
   dns_prefix                        = local.crossplane_name
   kubernetes_version                = data.azurerm_kubernetes_service_versions.current.latest_version
   sku_tier                          = "Standard"
+  automatic_channel_upgrade         = "patch"
+  node_os_channel_upgrade           = "NodeImage"
   oidc_issuer_enabled               = true
   workload_identity_enabled         = true
   open_service_mesh_enabled         = false
   azure_policy_enabled              = true
   local_account_disabled            = true
   role_based_access_control_enabled = true
-  automatic_channel_upgrade         = "patch"
-  image_cleaner_enabled             = true
-  image_cleaner_interval_hours      = 48
+
+  image_cleaner_enabled        = true
+  image_cleaner_interval_hours = 48
 
   azure_active_directory_role_based_access_control {
-    managed                = true
-    azure_rbac_enabled     = true
-    tenant_id              = data.azurerm_client_config.current.tenant_id
-    admin_group_object_ids = [var.azure_rbac_group_object_id]
+    managed            = true
+    azure_rbac_enabled = true
+    tenant_id          = data.azurerm_client_config.current.tenant_id
   }
 
   identity {
@@ -52,7 +53,7 @@ resource "azurerm_kubernetes_cluster" "crossplane" {
     vm_size             = "Standard_DS4_v2"
     os_disk_size_gb     = 30
     vnet_subnet_id      = azurerm_subnet.crossplane.id
-    os_sku              = "CBLMariner"
+    os_sku              = "Mariner"
     type                = "VirtualMachineScaleSets"
     enable_auto_scaling = true
     min_count           = 1
@@ -68,7 +69,7 @@ resource "azurerm_kubernetes_cluster" "crossplane" {
     service_cidr        = "100.${random_integer.crossplane_services_cidr.id}.0.0/16"
     pod_cidr            = "100.${random_integer.crossplane_pod_cidr.id}.0.0/16"
     network_plugin      = "azure"
-    network_plugin_mode = "Overlay"
+    network_plugin_mode = "overlay"
     load_balancer_sku   = "standard"
   }
 
