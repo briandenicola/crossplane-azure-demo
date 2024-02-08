@@ -13,3 +13,4 @@ spec:
     clusterConfigurationUri: https://github.com/briandenicola/crossplane-azure-demo
     clusterCommonConfigruationPath: ./cluster-configs/common
     clusterAppsConfigruationPath: ./cluster-configs/workload
+    kubernetesVersion: 1.27.7
