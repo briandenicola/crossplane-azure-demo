@@ -1,9 +1,9 @@
 resource "azurerm_kubernetes_cluster_extension" "flux" {
   depends_on = [
-    azurerm_kubernetes_cluster.crossplane
+        azurerm_kubernetes_cluster.crossplane
   ]
   name           = "flux"
-  cluster_id     = azurerm_kubernetes_cluster.this.id
+  cluster_id     = azurerm_kubernetes_cluster.crossplane.id
   extension_type = "microsoft.flux"
 }
 

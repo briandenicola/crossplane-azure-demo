@@ -1,5 +1,5 @@
 resource "azurerm_monitor_diagnostic_setting" "aks" {
-  name                       = "${var.cluster_name}-diag"
+  name                       = "${local.crossplane_name}-diag"
   target_resource_id         = azurerm_kubernetes_cluster.crossplane.id
   log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
 

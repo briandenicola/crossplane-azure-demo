@@ -46,6 +46,7 @@ locals {
   vnet_cidr                    = cidrsubnet("10.0.0.0/8", 8, random_integer.vnet_cidr.result)
   crossplane_nodes_subnet_cidr = cidrsubnet(local.vnet_cidr, 8, 2)
   crossplane_api_subnet_cidir  = cidrsubnet(local.vnet_cidr, 12, 1)
+  tags                         = "Crossplane Demo Application"
 }
 
 resource "azurerm_resource_group" "this" {
@@ -53,13 +54,9 @@ resource "azurerm_resource_group" "this" {
   location = local.location
 
   tags = {
-    Application = "httpbin"
+    Application =  local.tags
     Components  = "aks; kubevela; crossplane; upbound"
     DeployedOn  = timestamp()
     Deployer    = data.azurerm_client_config.current.object_id
   }
-}
-
-data "azurerm_kubernetes_service_versions" "current" {
-  location = azurerm_resource_group.this.location
 }

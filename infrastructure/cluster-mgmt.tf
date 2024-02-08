@@ -1,3 +1,18 @@
+data "azurerm_kubernetes_service_versions" "current" {
+  location = azurerm_resource_group.this.location
+}
+
+locals {
+  kubernetes_version = data.azurerm_kubernetes_service_versions.current.versions[length(data.azurerm_kubernetes_service_versions.current.versions) - 2]
+  allowed_ip_range   = ["${chomp(data.http.myip.response_body)}/32"]
+  zones              = var.region == "northcentralus" ? null : ["1", "2", "3"]
+}
+
+resource "tls_private_key" "rsa" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
 resource "azurerm_kubernetes_cluster" "crossplane" {
   lifecycle {
     ignore_changes = [
@@ -10,7 +25,6 @@ resource "azurerm_kubernetes_cluster" "crossplane" {
   location                          = azurerm_resource_group.this.location
   node_resource_group               = "${local.resource_name}_crossplane_nodes_rg"
   dns_prefix                        = local.crossplane_name
-  kubernetes_version                = data.azurerm_kubernetes_service_versions.current.latest_version
   sku_tier                          = "Standard"
   automatic_channel_upgrade         = "patch"
   node_os_channel_upgrade           = "NodeImage"
@@ -20,9 +34,22 @@ resource "azurerm_kubernetes_cluster" "crossplane" {
   azure_policy_enabled              = true
   local_account_disabled            = true
   role_based_access_control_enabled = true
+  kubernetes_version                = local.kubernetes_version
+  image_cleaner_enabled             = true
+  image_cleaner_interval_hours      = 48
 
-  image_cleaner_enabled        = true
-  image_cleaner_interval_hours = 48
+  api_server_access_profile {
+    vnet_integration_enabled = true
+    subnet_id                = azurerm_subnet.api.id
+    authorized_ip_ranges     = local.allowed_ip_range
+  }
+
+  linux_profile {
+    admin_username = "manager"
+    ssh_key {
+      key_data = tls_private_key.rsa.public_key_openssh
+    }
+  }
 
   azure_active_directory_role_based_access_control {
     managed            = true
@@ -41,24 +68,20 @@ resource "azurerm_kubernetes_cluster" "crossplane" {
     user_assigned_identity_id = azurerm_user_assigned_identity.crossplane_kubelet_identity.id
   }
 
-  api_server_access_profile {
-    vnet_integration_enabled = true
-    subnet_id                = azurerm_subnet.api.id
-    authorized_ip_ranges     = ["${chomp(data.http.myip.response_body)}/32"]
-  }
-
   default_node_pool {
     name                = "default"
     node_count          = 1
-    vm_size             = "Standard_DS4_v2"
-    os_disk_size_gb     = 30
+    vm_size             = var.vm_sku
+    zones               = local.zones
+    os_disk_size_gb     = 100
     vnet_subnet_id      = azurerm_subnet.crossplane.id
     os_sku              = "Mariner"
+    os_disk_type        = "Ephemeral"
     type                = "VirtualMachineScaleSets"
     enable_auto_scaling = true
     min_count           = 1
-    max_count           = 3
-    max_pods            = 40
+    max_count           = 9
+    max_pods            = 90
     upgrade_settings {
       max_surge = "33%"
     }
@@ -73,21 +96,58 @@ resource "azurerm_kubernetes_cluster" "crossplane" {
     load_balancer_sku   = "standard"
   }
 
-  oms_agent {
-    log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
+  maintenance_window_auto_upgrade {
+    frequency = "Weekly"
+    interval  = 1
+    duration  = 4
+    day_of_week = "Friday"
+    utc_offset = "-06:00"
+    start_time = "20:00"
   }
 
-  microsoft_defender {
-    log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
+  maintenance_window_node_os {
+    frequency = "Weekly"
+    interval  = 1
+    duration  = 4
+    day_of_week = "Saturday"
+    utc_offset = "-06:00"
+    start_time = "20:00"
   }
 
-  key_vault_secrets_provider {
-    secret_rotation_enabled  = true
-    secret_rotation_interval = "5m"
+  auto_scaler_profile {
+    max_unready_nodes = "1"
   }
 
   workload_autoscaler_profile {
     keda_enabled = true
+  }
+
+  storage_profile {
+    blob_driver_enabled = true
+    disk_driver_enabled = true
+    disk_driver_version = "v2"
+    file_driver_enabled = true
+  }
+
+  oms_agent {
+    log_analytics_workspace_id      = azurerm_log_analytics_workspace.this.id
+    msi_auth_for_monitoring_enabled = true
+  }
+
+  microsoft_defender {
+    log_analytics_workspace_id      = azurerm_log_analytics_workspace.this.id
+  }
+
+  monitor_metrics {
+  }
+  
+  key_vault_secrets_provider {
+    secret_rotation_enabled = true
+  }
+
+  service_mesh_profile {
+    mode                             = "Istio" 
+    internal_ingress_gateway_enabled = true
   }
 
 }
