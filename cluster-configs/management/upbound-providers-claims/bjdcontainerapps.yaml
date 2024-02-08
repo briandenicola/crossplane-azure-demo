@@ -1,37 +1,45 @@
+---
+apiVersion: azure.upbound.io/v1beta1
+kind: ResourceGroup
+metadata:
+  name: bjdapp01-demo-rg
+  labels:
+    meta.upbound.io/rg-name: bjdapp01-demo-rg
+    meta.upbound.io/type: azure-resource-group
+    bjdazure.tech/app-name: bjdapp01
+spec:
+  providerConfigRef:
+    name: azure
+  forProvider:
+    location: SouthCentral US
+---
 apiVersion: containerapp.azure.upbound.io/v1beta1
 kind: Environment
 metadata:
-  annotations:
-    meta.upbound.io/example-id: containerapp/v1beta1/environment
+  name: bjdcae01
   labels:
-    testing.upbound.io/bjdapp01-name: bjdapp01
-  name: bjdapp01
+    bjdazure.tech/app-name: bjdapp01
+    bjdazure.tech/cae-name: bjdcae01
 spec:
   forProvider:
-    location: West Europe
-    logAnalyticsWorkspaceIdSelector:
-      matchLabels:
-        testing.upbound.io/bjdapp01-name: bjdapp01
     resourceGroupNameSelector:
       matchLabels:
-        testing.upbound.io/bjdapp01-name: bjdapp01
+        meta.upbound.io/rg-name: bjdapp01
 ---
 apiVersion: containerapp.azure.upbound.io/v1beta1
 kind: ContainerApp
 metadata:
-  annotations:
-    meta.upbound.io/bjdapp01-id: containerapp/v1beta1/containerapp
-  labels:
-    testing.upbound.io/bjdapp01-name: bjd
   name: bjdapp01
+  labels:
+    bjdazure.tech/app-name: bjdapp01
 spec:
   forProvider:
     containerAppEnvironmentIdSelector:
       matchLabels:
-        testing.upbound.io/bjdapp01-name: bjdapp01
+        bjdazure.tech/cae-name: bjdcae01
     resourceGroupNameSelector:
       matchLabels:
-        testing.upbound.io/bjdapp01-name: bjdapp01
+        meta.upbound.io/rg-name: bjdapp01-demo-rg
     revisionMode: Single
     template:
       - container:
