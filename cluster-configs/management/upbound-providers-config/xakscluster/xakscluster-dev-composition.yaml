@@ -215,7 +215,7 @@ spec:
       toFieldPath: spec.forProvider.dnsPrefix
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.nodeCount
-      toFieldPath: spec.defaultNodePool.nodeCount
+      toFieldPath: spec.forProvider.defaultNodePool.nodeCount
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.authorizedIpRanges
       toFieldPath: spec.forProvider.apiServerAccessProfile.authorizedIpRanges
