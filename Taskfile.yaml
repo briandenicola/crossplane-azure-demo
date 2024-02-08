@@ -17,7 +17,7 @@ tasks:
     desc: Grab AKS credentials 
     cmds:
     - az aks get-credentials -g {{.RG}} -n {{.AKS}} --overwrite-existing
-    - kubelogin convert-kubeconfig -l azurecli
+    - sed -i s/devicecode/azurecli/g ~/.kube/config
     vars:
       RG: 
         sh: terraform -chdir=./infrastructure output -raw AKS_RESOURCE_GROUP
