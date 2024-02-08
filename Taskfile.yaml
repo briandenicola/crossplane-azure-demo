@@ -60,7 +60,7 @@ tasks:
       UMI_CLIENT_NAME:
         sh: terraform -chdir=./infrastructure output -raw UMI_CLIENT_NAME
       CURRENT_REVISION:
-        sh: kubectl -n {{.NAMESPACE}} get Provider provider-azure -o jsonpath='{.status.currentRevision}'
+        sh: kubectl -n {{.NAMESPACE}} get providers.pkg.crossplane.io provider-azure -o jsonpath='{.status.currentRevision}'
 
   down:
     desc: Destroys all Azure resources and cleans up Terraform
