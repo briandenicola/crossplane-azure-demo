@@ -155,19 +155,18 @@ spec:
           - azureRbacEnabled: true 
             managed: true
           defaultNodePool:
-            - name: default
-              vnetSubnetIdSelector:
-                matchLabels:
-                  meta.upbound.io/type: azure-virtual-subnet
-                  meta.upbound.io/subnet-for: akscluster-nodes
-              vmSize: Standard_B4ms
-              nodeCount: 1
-              enableAutoScaling: true
-              minCount: 1
-              maxCount: 3
-              maxPods: 90
-              osDiskSizeGb: 100
-              osSku: Mariner
+          - name: default
+            vnetSubnetIdSelector:
+              matchLabels:
+                meta.upbound.io/type: azure-virtual-subnet
+                meta.upbound.io/subnet-for: akscluster-nodes
+            vmSize: Standard_B4ms
+            enableAutoScaling: true
+            minCount: 1
+            maxCount: 3
+            maxPods: 90
+            osDiskSizeGb: 100
+            osSku: Mariner
           networkProfile:
           - serviceCidr: 100.64.0.0/16
             dnsServiceIp: "100.64.0.10"
@@ -215,10 +214,10 @@ spec:
       toFieldPath: spec.forProvider.dnsPrefix
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.nodeCount
-      toFieldPath: spec.forProvider.defaultNodePool.nodeCount
+      toFieldPath: spec.forProvider.defaultNodePool[0].nodeCount
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.authorizedIpRanges
-      toFieldPath: spec.forProvider.apiServerAccessProfile.authorizedIpRanges
+      toFieldPath: spec.forProvider.apiServerAccessProfile[0].authorizedIpRanges[0]
     - type: CombineFromComposite
       combine:
         variables:
