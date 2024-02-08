@@ -147,8 +147,8 @@ spec:
         forProvider:
           automaticChannelUpgrade: "patch"
           oidcIssuerEnabled: true
-          skuTier: Free
           workloadIdentityEnabled: true
+          skuTier: Standard 
           runCommandEnabled: true
           localAccountDisabled: true
           azureActiveDirectoryRoleBasedAccessControl:
@@ -165,18 +165,22 @@ spec:
               enableAutoScaling: true
               minCount: 1
               maxCount: 3
-              maxPods: 40
+              maxPods: 90
               osDiskSizeGb: 100
-              osSku: CBLMariner
-          kubernetesVersion: "1.27.7"
+              osSku: Mariner
           networkProfile:
           - serviceCidr: 100.64.0.0/16
             dnsServiceIp: "100.64.0.10"
-            podCidr: 100.62.0.0/16
+            podCidr: 100.99.0.0/16
             dockerBridgeCidr: 172.17.0.1/16
             loadBalancerSku: standard
             networkPlugin: azure
             networkPluginMode: Overlay
+            ebpfDataPlane: cilium
+          serviceMeshProfile:
+          - mode: Istio
+          workloadAutoscalerProfile:
+          - kedaEnabled: true
           identity:
           - type: SystemAssigned
           resourceGroupNameSelector:
@@ -212,6 +216,9 @@ spec:
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.nodeCount
       toFieldPath: spec.defaultNodePool.nodeCount
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.authorizedIpRanges
+      toFieldPath: spec.forProvider.apiServerAccessProfile.authorizedIpRanges
     - type: CombineFromComposite
       combine:
         variables:
