@@ -1,0 +1,41 @@
+apiVersion: containerapp.azure.upbound.io/v1beta1
+kind: Environment
+metadata:
+  annotations:
+    meta.upbound.io/example-id: containerapp/v1beta1/environment
+  labels:
+    testing.upbound.io/bjdapp01-name: bjdapp01
+  name: bjdapp01
+spec:
+  forProvider:
+    location: West Europe
+    logAnalyticsWorkspaceIdSelector:
+      matchLabels:
+        testing.upbound.io/bjdapp01-name: bjdapp01
+    resourceGroupNameSelector:
+      matchLabels:
+        testing.upbound.io/bjdapp01-name: bjdapp01
+---
+apiVersion: containerapp.azure.upbound.io/v1beta1
+kind: ContainerApp
+metadata:
+  annotations:
+    meta.upbound.io/bjdapp01-id: containerapp/v1beta1/containerapp
+  labels:
+    testing.upbound.io/bjdapp01-name: bjd
+  name: bjdapp01
+spec:
+  forProvider:
+    containerAppEnvironmentIdSelector:
+      matchLabels:
+        testing.upbound.io/bjdapp01-name: bjdapp01
+    resourceGroupNameSelector:
+      matchLabels:
+        testing.upbound.io/bjdapp01-name: bjdapp01
+    revisionMode: Single
+    template:
+      - container:
+          - cpu: 0.25
+            image: mcr.microsoft.com/azuredocs/containerapps-helloworld:latest
+            memory: 0.5Gi
+            name: bjdapp01containerapp
