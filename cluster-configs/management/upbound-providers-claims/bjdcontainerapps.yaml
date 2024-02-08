@@ -22,6 +22,7 @@ metadata:
     bjdazure.tech/cae-name: bjdcae01
 spec:
   forProvider:
+    location: SouthCentral US
     resourceGroupNameSelector:
       matchLabels:
         meta.upbound.io/rg-name: bjdapp01
