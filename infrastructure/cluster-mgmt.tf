@@ -145,11 +145,6 @@ resource "azurerm_kubernetes_cluster" "crossplane" {
     secret_rotation_enabled = true
   }
 
-  service_mesh_profile {
-    mode                             = "Istio" 
-    internal_ingress_gateway_enabled = true
-  }
-
 }
 
 data "azurerm_public_ip" "crossplane" {
