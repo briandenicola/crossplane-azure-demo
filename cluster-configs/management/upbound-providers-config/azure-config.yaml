@@ -18,7 +18,7 @@ metadata:
 kind: ProviderConfig
 spec:
     credentials:
-      source: UserAssignedManagedIdentity
+      source: OIDCTokenFile
     clientID:  4f6ebfa3-6e39-4eda-a7f9-d2fa4808c495
     subscriptionID: ccfc5dda-43af-4b5e-8cc2-1dda18f2382e
     tenantID:  16b3c013-d300-468d-ac64-7eda0820b6d3
