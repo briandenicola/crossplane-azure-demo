@@ -168,7 +168,7 @@ spec:
               maxPods: 40
               osDiskSizeGb: 100
               osSku: CBLMariner
-          kubernetesVersion: "1.26.0"
+          kubernetesVersion: "1.27.7"
           networkProfile:
           - serviceCidr: 100.64.0.0/16
             dnsServiceIp: "100.64.0.10"
@@ -192,6 +192,9 @@ spec:
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.name
       toFieldPath: spec.writeConnectionSecretToRef.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.kubernetesVersion
+      toFieldPath: spec.forProvider.kubernetesVersion
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.location
       toFieldPath: spec.forProvider.location
@@ -220,142 +223,3 @@ spec:
       toFieldPath: spec.forProvider.nodeResourceGroup
       policy:
         fromFieldPath: Required
-  - name: azure-flux-extension-install-and-configuration
-    base:
-      apiVersion: resources.azure.upbound.io/v1beta1
-      kind: ResourceGroupTemplateDeployment
-      metadata:
-        name: flux
-        labels:
-          meta.upbound.io/rg-name: crossplane-demo-rg
-          meta.upbound.io/type: azure-kubernetes-flux-extension
-      spec:
-        providerConfigRef:
-          name: azure
-        forProvider:
-          deploymentMode: Incremental
-          resourceGroupNameSelector:
-            matchLabels:
-              meta.upbound.io/rg-name: crossplane-demo-rg
-              meta.upbound.io/type: azure-resource-group
-          parametersContent: |-
-            ${jsonencode({
-              "aksId" = {
-                value = "fq-cluster-resource-id"
-              },
-              "clusterConfigurationUri" ={
-                value = "https://github.com/example/"
-              },
-              "clusterCommonConfigruationPath" ={
-                value = "./some/path/under/example/common"
-              },
-              "clusterAppsConfigruationPath" ={
-                value = "./some/path/under/example/repo"
-              }
-            })}
-          templateContent: |-
-            {
-              "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-              "contentVersion": "1.0.0.0",
-              "parameters": {
-                  "aksId": {
-                    "type": "String",
-                    "metadata": {
-                      "description": "Resource Id of the AKS Cluster"
-                    }
-                  },
-                  "clusterConfigurationUri": {
-                    "type": "String",
-                    "metadata": {
-                      "description": "Location of the Git repostory for cluster confgurations"
-                    }
-                  },
-                  "clusterCommonConfigruationPath": {
-                    "type": "String",
-                    "metadata": {
-                      "description": "Path of the common cluster confgurations kustomize files"
-                    }
-                  },
-                  "clusterAppsConfigruationPath": {
-                    "type": "String",
-                    "metadata": {
-                      "description": "Path of the application cluster confgurations kustomize files"
-                    }
-                  }
-              },
-              "variables": {},
-              "resources": [
-                {
-                  "type": "Microsoft.KubernetesConfiguration/extensions",
-                  "apiVersion": "2022-03-01",
-                  "name": "flux",
-                  "scope": "[parameters('aksId')]",
-                  "identity": {
-                    "type": "SystemAssigned"
-                  },
-                  "properties": {
-                    "extensionType": "microsoft.flux",
-                    "autoUpgradeMinorVersion": true,
-                    "releaseTrain": "stable",
-                    "scope": {
-                      "cluster": {
-                        "releaseNamespace": "flux-system"
-                      }
-                    }
-                  }
-                },
-                {
-                  "type": "Microsoft.KubernetesConfiguration/fluxConfigurations",
-                  "apiVersion": "2022-03-01",
-                  "name": "fluxconfiguration",
-                  "scope": "[parameters('aksId')]",
-                  "properties": {
-                    "scope": "cluster",
-                    "namespace": "flux-system",
-                    "sourceKind": "GitRepository",
-                    "suspend": false,
-                    "gitRepository": {
-                      "url": "[parameters('clusterConfigurationUri')]",
-                      "timeoutInSeconds": 600,
-                      "syncIntervalInSeconds": 300,
-                      "repositoryRef": {
-                        "branch": "main"
-                      }
-                    },
-                    "kustomizations": {
-                      "cluster-config": {
-                        "path": "[parameters('clusterCommonConfigruationPath')]",
-                        "dependsOn": [],
-                        "timeoutInSeconds": 600,
-                        "syncIntervalInSeconds": 120,
-                        "retryIntervalInSeconds": 300,
-                        "prune": true
-                      },
-                      "apps": {
-                        "path": "[parameters('clusterAppsConfigruationPath')]",
-                        "dependsOn": [
-                          "cluster-config"
-                        ],
-                        "timeoutInSeconds": 600,
-                        "syncIntervalInSeconds": 120,
-                        "retryIntervalInSeconds": 300,
-                        "prune": true
-                      }
-                    }
-                  }
-                }
-              ],
-              "outputs": {}
-            }
-    patches:
-    - type: CombineFromComposite
-      combine:
-        variables:
-        - fromFieldPath: status.aksId
-        - fromFieldPath: spec.parameters.clusterConfigurationUri
-        - fromFieldPath: spec.parameters.clusterCommonConfigruationPath
-        - fromFieldPath: spec.parameters.clusterAppsConfigruationPath
-        strategy: string
-        string:
-          fmt: ${jsonencode({ "aksId" = { value = "%s" }, "clusterConfigurationUri" = { value = "%s" }, "clusterCommonConfigruationPath" = { value = "%s" }, "clusterAppsConfigruationPath" ={ value = "%s" }})}
-      toFieldPath: spec.forProvider.parametersContent

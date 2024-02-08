@@ -29,6 +29,8 @@ spec:
                     type: integer
                   name:
                     type: string
+                  kubernetesVersion:
+                    type: string
                   location:
                     type: string
                     enum:
@@ -47,6 +49,7 @@ spec:
                 - clusterConfigurationUri
                 - clusterCommonConfigruationPath
                 - clusterAppsConfigruationPath
+                - kubernetesVersion
             required:
             - parameters
           status:
