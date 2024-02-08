@@ -14,3 +14,4 @@ spec:
     clusterCommonConfigruationPath: ./cluster-configs/common
     clusterAppsConfigruationPath: ./cluster-configs/workload
     kubernetesVersion: 1.27.7
+    authorizedIpRanges: "47.185.160.37/32"
