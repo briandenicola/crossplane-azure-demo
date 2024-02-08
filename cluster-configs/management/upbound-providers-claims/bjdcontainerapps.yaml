@@ -13,19 +13,42 @@ spec:
   forProvider:
     location: SouthCentral US
 ---
-apiVersion: containerapp.azure.upbound.io/v1beta1
-kind: Environment
+apiVersion: operationalinsights.azure.upbound.io/v1beta1
+kind: Workspace
 metadata:
-  name: bjdcae01
+  name: bjdlogs002
   labels:
+    bjdazure.tech/law-name: bjdlogs002
     bjdazure.tech/app-name: bjdapp01
-    bjdazure.tech/cae-name: bjdcae01
 spec:
+  providerConfigRef:
+    name: azure
   forProvider:
     location: SouthCentral US
     resourceGroupNameSelector:
       matchLabels:
-        meta.upbound.io/rg-name: bjdapp01
+        meta.upbound.io/rg-name: bjdapp01-demo-rg
+    retentionInDays: 30
+    sku: PerGB2018
+---
+apiVersion: containerapp.azure.upbound.io/v1beta1
+kind: Environment
+metadata:
+  name: bjdcae02
+  labels:
+    bjdazure.tech/app-name: bjdapp01
+    bjdazure.tech/cae-name: bjdcae02
+spec:
+  providerConfigRef:
+    name: azure
+  forProvider:
+    location: SouthCentral US
+    logAnalyticsWorkspaceIdSelector:
+      matchLabels:
+        bjdazure.tech/law-name: bjdlogs002
+    resourceGroupNameSelector:
+      matchLabels:
+        meta.upbound.io/rg-name: bjdapp01-demo-rg
 ---
 apiVersion: containerapp.azure.upbound.io/v1beta1
 kind: ContainerApp
@@ -34,10 +57,12 @@ metadata:
   labels:
     bjdazure.tech/app-name: bjdapp01
 spec:
+  providerConfigRef:
+    name: azure
   forProvider:
     containerAppEnvironmentIdSelector:
       matchLabels:
-        bjdazure.tech/cae-name: bjdcae01
+        bjdazure.tech/cae-name: bjdcae02
     resourceGroupNameSelector:
       matchLabels:
         meta.upbound.io/rg-name: bjdapp01-demo-rg
