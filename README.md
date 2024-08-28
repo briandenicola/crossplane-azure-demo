@@ -179,5 +179,5 @@ xsillydemoapps.apps.bjdazure.tech  | A demo of XRs of XRs.  This app is made up 
 - [X] Add GitOps/Kubevela to Workload cluster
 - [ ] Add Flux Extensions to Workload Cluster
 - [ ] Add Backstage
-- [ ] Create a Crossplane Composition with Terraform
+- [ ] Create a Crossplane Composition with [KCL](https://blog.upbound.io/kcl-benefits-crossplane-composition-building)
 
