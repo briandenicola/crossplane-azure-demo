@@ -27,7 +27,7 @@ This repository is a demonstration of using Crossplane/Upbound in Azure on AKS. 
 
 ## Request Azure Resources
 ```bash
-    kubectl apply -f ./claims/ManagedIdentity.yaml #Creates a Resource Group and a Managed Identity 
+    kubectl apply -f ./claims/ManagedIdentity.yaml #Creates a Resource Group and a couple Managed Identities
     kubectl apply -f ./claims/bjdcontainerapps.yaml #Create Azure Container Apps
     kubectl apply -f ./claims/bjdaks05.yaml #Creates an AKS cluster and deploy an application defined by OAM/Kubevela from ./cluster-configs/workload/httpbin.yaml
 ```
@@ -84,7 +84,6 @@ xsillydemoapps.apps.bjdazure.tech  | A demo of XRs of XRs.  This app is made up 
     xaksclusters.containers.bjdazure.tech         True          True      19h
     xeventhubs.pubsub.bjdazure.tech               True          True      16h
     xmanagedidentities.identities.bjdazure.tech   True          True      18h
-    xsillydemoapps.apps.bjdazure.tech             True          True      18h
     xvirtualnetworks.networking.bjdazure.tech     True          True      19h
 
     kubectl get xmanagedidentities.identities.bjdazure.tech
