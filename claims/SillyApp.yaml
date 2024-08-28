@@ -1,0 +1,24 @@
+apiVersion: azure.upbound.io/v1beta1
+kind: ResourceGroup
+metadata:
+  name: test-app01-rg
+  namespace: default
+spec:
+  providerConfigRef:
+    name: azure
+  forProvider:
+    location: SouthCentral US
+---
+apiVersion: apps.bjdazure.tech/v1alpha1
+kind: SillyDemoApp
+metadata:
+  name: bjdapp01
+  namespace: default
+spec:
+  compositionRef:
+    name: xsillydemoapp-dev
+  parameters:
+    location: southcentralus
+    name: bjdapp01
+    rgName: test-app01-rg
+    networkCidr: 200

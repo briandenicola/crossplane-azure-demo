@@ -25,6 +25,14 @@ This repository is a demonstration of using Crossplane/Upbound in Azure on AKS. 
     task federate-serviceaccount 
 ```
 
+## Request Azure Resources
+```bash
+    kubectl apply -f ./claims/ManagedIdentity.yaml #Creates a Resource Group and a Managed Identity 
+    kubectl apply -f ./claims/bjdcontainerapps.yaml #Create Azure Container Apps
+    kubectl apply -f ./claims/bjdaks05.yaml #Creates an AKS cluster and deploy an application defined by OAM/Kubevela from ./cluster-configs/workload/httpbin.yaml
+```
+>> Note: More examples can be found in my [CNCF](https://github.com/briandenicola/cncf/tree/main/crossplane/manifests) project
+
 ## Destory Environment
 ```bash
     az login --scope https://graph.microsoft.com/.default
@@ -69,9 +77,7 @@ xsillydemoapps.apps.bjdazure.tech  | A demo of XRs of XRs.  This app is made up 
     NAME                                                    REVISION                SUSPENDED       READY   MESSAGE
     kustomization/cluster-config-addons                     main@sha1:ca073f30      False           True    Applied revision: main@sha1:ca073f30
     kustomization/cluster-config-crossplane-cfg             main@sha1:ca073f30      False           True    Applied revision: main@sha1:ca073f30
-    kustomization/cluster-config-crossplane-claims          main@sha1:ca073f30      False           True    Applied revision: main@sha1:ca073f30
     kustomization/cluster-config-crossplane-compositions    main@sha1:ca073f30      False           True    Applied revision: main@sha1:ca073f30
-
 
     kubectl get xrds
     NAME                                          ESTABLISHED   OFFERED   AGE
@@ -80,14 +86,6 @@ xsillydemoapps.apps.bjdazure.tech  | A demo of XRs of XRs.  This app is made up 
     xmanagedidentities.identities.bjdazure.tech   True          True      18h
     xsillydemoapps.apps.bjdazure.tech             True          True      18h
     xvirtualnetworks.networking.bjdazure.tech     True          True      19h
-
-    kubectl get xsillydemoapps.apps.bjdazure.tech
-    NAME             SYNCED   READY   COMPOSITION         AGE
-    bjdapp01-2fxsn   True     True    xsillydemoapp-dev   18h
-
-    kubectl get xvirtualnetworks.networking.bjdazure.tech
-    NAME                   SYNCED   READY   COMPOSITION           AGE
-    bjdapp01-2fxsn-fz56h   True     True    xvirtualnetwork-dev   18h
 
     kubectl get xmanagedidentities.identities.bjdazure.tech
     NAME                   SYNCED   READY   COMPOSITION            AGE
@@ -131,10 +129,6 @@ xsillydemoapps.apps.bjdazure.tech  | A demo of XRs of XRs.  This app is made up 
     status:
     users: 1
 ```
-
-# Create Sample AKS Cluster via Crossplane
-* Uncomment ./cluster-configs/management/upbound-providers-claims/bjdaks05.yaml
-* This will create an AKS cluster and deploy an application defined by OAM/Kubevela from ./cluster-configs/workload/httpbin.yaml
 
 ## Commands
 ```bash

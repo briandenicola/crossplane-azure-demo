@@ -1,0 +1,35 @@
+apiVersion: azure.upbound.io/v1beta1
+kind: ResourceGroup
+metadata:
+  name: test-mi-rg
+spec:
+  providerConfigRef:
+    name: azure
+  forProvider:
+    location: SouthCentral US
+---
+apiVersion: identities.bjdazure.tech/v1alpha1
+kind: ManagedIdentity
+metadata:
+  namespace: default
+  name: bjdid05
+spec:
+  compositionRef:
+    name: xmanagedidentity-dev
+  parameters:
+    location: southcentralus
+    name: bjdid05
+    rgName: test-mi-rg
+---
+apiVersion: identities.bjdazure.tech/v1alpha1
+kind: ManagedIdentity
+metadata:
+  namespace: default
+  name: bjdid01
+spec:
+  compositionRef:
+    name: xmanagedidentity-dev
+  parameters:
+    location: southcentralus
+    name: bjdid01
+    rgName: test-mi-rg
