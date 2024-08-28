@@ -69,7 +69,7 @@ resource "azurerm_kubernetes_cluster" "crossplane" {
   }
 
   default_node_pool {
-    name                = "default"
+    name                = "system"
     node_count          = 1
     vm_size             = var.vm_sku
     zones               = local.zones
@@ -125,13 +125,11 @@ resource "azurerm_kubernetes_cluster" "crossplane" {
   storage_profile {
     blob_driver_enabled = true
     disk_driver_enabled = true
-    disk_driver_version = "v2"
     file_driver_enabled = true
   }
 
   oms_agent {
     log_analytics_workspace_id      = azurerm_log_analytics_workspace.this.id
-    msi_auth_for_monitoring_enabled = true
   }
 
   microsoft_defender {

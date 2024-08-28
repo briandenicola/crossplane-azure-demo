@@ -4,15 +4,25 @@ tasks:
   up:
     desc: Builds end to end an AKS environment
     cmds:
+    - task: init
+    - task: apply
+    - task: creds
+    - task: provider-config
+  
+  init:
+    cmds:
     - terraform -chdir=./infrastructure workspace new {{.REGION}} || true
     - terraform -chdir=./infrastructure workspace select {{.REGION}}
     - terraform -chdir=./infrastructure init
-    - terraform -chdir=./infrastructure apply -auto-approve -var "region={{.REGION}}"
-    - task: creds
-    - task: provider-config
     vars:
       REGION: '{{default "southcentralus" .CLI_ARGS}}'
-    
+
+  apply:
+    cmds:
+    - terraform -chdir=./infrastructure apply -auto-approve -var "region={{.REGION}}"
+    vars:
+      REGION: '{{default "southcentralus" .CLI_ARGS}}'
+  
   creds:
     desc: Grab AKS credentials 
     cmds:
@@ -66,4 +76,4 @@ tasks:
     desc: Destroys all Azure resources and cleans up Terraform
     cmds:
     - az group list --tag Application="Crossplane Demo Application" --query "[].name" -o tsv | xargs -ot -n 1 az group delete -y --verbose --no-wait -n  || true
-    - cd ./infrastructure/patch-demo; rm -rf terraform.tfstate.d .terraform.lock.hcl .terraform terraform.tfstate terraform.tfstate.backup .terraform.tfstate.lock.info || true
+    - cd ./infrastructure; rm -rf terraform.tfstate.d .terraform.lock.hcl .terraform terraform.tfstate terraform.tfstate.backup .terraform.tfstate.lock.info || true
