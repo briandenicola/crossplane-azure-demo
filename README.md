@@ -154,7 +154,10 @@ xsillydemoapps.apps.bjdazure.tech  | A demo of XRs of XRs.  This app is made up 
     az aks get-credentials --resource-group bjdaks05-g97tk-frfpb --name bjdaks05-g97tk-vqjgw
     Merged "bjdaks05-g97tk-vqjgw" as current context in /home/brian/.kube/config
 
-
+    kubectl get nodes
+    NAME                              STATUS   ROLES   AGE   VERSION
+    aks-default-92058843-vmss000000   Ready    agent   23m   v1.27.7
+    aks-default-92058843-vmss000001   Ready    agent   23m   v1.27.7
 ```
 
 # Additional References
@@ -174,5 +177,7 @@ xsillydemoapps.apps.bjdazure.tech  | A demo of XRs of XRs.  This app is made up 
 # Backlog
 - [X] Learn Crossplane
 - [X] Add GitOps/Kubevela to Workload cluster
+- [ ] Add Flux Extensions to Workload Cluster
 - [ ] Add Backstage
-- [ ] Update automation to deploy app from Backstage to newly created cluster through Crossplane and Flux
+- [ ] Create a Crossplane Composition with Terraform
+
