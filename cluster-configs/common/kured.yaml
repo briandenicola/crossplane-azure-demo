@@ -4,7 +4,7 @@ kind: Namespace
 metadata:
   name: kured-system
 ---
-apiVersion: source.toolkit.fluxcd.io/v1beta1
+apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: kubereboot
@@ -13,7 +13,7 @@ spec:
   interval: 1m0s
   url: https://kubereboot.github.io/charts/
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: kured
