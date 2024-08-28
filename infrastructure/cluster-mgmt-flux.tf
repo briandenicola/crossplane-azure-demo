@@ -58,16 +58,5 @@ resource "azurerm_kubernetes_flux_configuration" "flux_config" {
       "crossplane-cfg"
     ]
   }
-
-  kustomizations {
-    name                       = "crossplane-claims"
-    path                       = local.crossplane_claims_path
-    timeout_in_seconds         = 600
-    sync_interval_in_seconds   = 120
-    retry_interval_in_seconds  = 300
-    garbage_collection_enabled = true
-    depends_on = [
-      "crossplane-compositions"
-    ]
-  }
+  
 }
