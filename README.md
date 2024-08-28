@@ -154,37 +154,7 @@ xsillydemoapps.apps.bjdazure.tech  | A demo of XRs of XRs.  This app is made up 
     az aks get-credentials --resource-group bjdaks05-g97tk-frfpb --name bjdaks05-g97tk-vqjgw
     Merged "bjdaks05-g97tk-vqjgw" as current context in /home/brian/.kube/config
 
-    flux get all
-    NAME                            REVISION                SUSPENDED       READY   MESSAGE
-    gitrepository/fluxconfiguration main@sha1:ca073f30      False           True    stored artifact for revision 'main@sha1:ca073f30'
 
-    NAME                            REVISION        SUSPENDED       READY   MESSAGE
-    helmrepository/daprrepo         sha256:30700e9b False           True    stored artifact: revision 'sha256:30700e9b'
-    helmrepository/kubereboot       sha256:fd8bc12e False           True    stored artifact: revision 'sha256:fd8bc12e'
-    helmrepository/kubevela         sha256:04ff52ef False           True    stored artifact: revision 'sha256:04ff52ef'
-
-    NAME                            REVISION        SUSPENDED       READY   MESSAGE
-    helmchart/flux-system-dapr      1.9.5           False           True    pulled 'dapr' chart with version '1.9.5'
-    helmchart/flux-system-kured     4.0.2           False           True    pulled 'kured' chart with version '4.0.2'
-    helmchart/flux-system-vela      1.7.2           False           True    pulled 'vela-core' chart with version '1.7.2'
-
-    NAME                    REVISION        SUSPENDED       READY   MESSAGE
-    helmrelease/dapr        1.9.5           False           True    Release reconciliation succeeded
-    helmrelease/kured       4.0.2           False           True    Release reconciliation succeeded
-    helmrelease/vela        1.7.2           False           True    Release reconciliation succeeded
-
-    NAME                                            REVISION                SUSPENDED       READY   MESSAGE
-    kustomization/fluxconfiguration-apps            main@sha1:ca073f30      False           True    Applied revision: main@sha1:ca073f30
-    kustomization/fluxconfiguration-cluster-config  main@sha1:ca073f30      False           True    Applied revision: main@sha1:ca073f30
-
-    kubectl -n apps get application
-    NAME      COMPONENT   TYPE         PHASE     HEALTHY   STATUS      AGE
-    httpbin   httpbin     webservice   running   true      Ready:2/2   92s
-
-    kubectl -n apps get pods
-    NAME                       READY   STATUS    RESTARTS   AGE
-    httpbin-7fbcb8955d-hg46h   1/1     Running   0          96s
-    httpbin-7fbcb8955d-pvnzk   1/1     Running   0          96s
 ```
 
 # Additional References
