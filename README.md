@@ -131,6 +131,14 @@ xsillydemoapps.apps.bjdazure.tech  | A demo of XRs of XRs.  This app is made up 
 
 ## Commands
 ```bash
+    kubectl get environments.containerapp.azure.upbound.io
+    NAME       READY   SYNCED   EXTERNAL-NAME   AGE
+    bjdcae02   True    True     bjdcae02        4m9s
+
+    kubectl get containerapps.containerapp.azure.upbound.io
+    NAME       READY   SYNCED   EXTERNAL-NAME   AGE
+    bjdapp01   True    True     bjdapp01        4m11s
+
     kubectl get xaksclusters.containers.bjdazure.tech  #Creating Cluster
     NAME             SYNCED   READY   COMPOSITION    AGE
     bjdaks05-g97tk   True     False   xcluster-dev   81s
